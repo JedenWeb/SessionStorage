@@ -10,7 +10,7 @@
 		}
 	],
 	"support": {
-		"issues": "https://github.com/paveljurasek/SessionStorage/issues"
+		"issues": "https://github.com/JedenWeb/SessionStorage/issues"
 	},
 	"require": {
 		"nette/nette": "dev-master"
