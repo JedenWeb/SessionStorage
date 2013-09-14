@@ -19,7 +19,7 @@ After that you have to register extension in config.neon.
 
 ```neon
 extensions:
-	databaseSessionStorage: JedenWeb\SessionStorage\DI\DatabaseSessionStorageExtension
+	jedenWeb.session: JedenWeb\SessionStorage\DI\DatabaseSessionStorageExtension
 ```
 
 ## Usage

@@ -14,7 +14,7 @@ class DatabaseSessionStorageExtension extends Nette\DI\CompilerExtension
 	{
 		$container = $this->getContainerBuilder();
 		
-		$definition = $container->addDefinition('jedenWeb.databaseSessionStorage')
+		$definition = $container->addDefinition($this->prefix('databaseStorage'))
 				->setClass('JedenWeb\SessionStorage\Http\DatabaseSessionStorage')
 				->addSetup('install');
 		
