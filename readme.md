@@ -28,4 +28,4 @@ extensions:
 
 ## Issues
 
-I don't know how to [prevent Nette\Http\SessionSection from triggering error]((http://api.nette.org/2.1/source-Http.SessionSection.php.html#201)).
+I don't know how to [prevent Nette\Http\SessionSection from triggering error](http://api.nette.org/2.1/source-Http.SessionSection.php.html#201).
