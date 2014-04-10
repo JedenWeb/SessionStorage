@@ -13,16 +13,14 @@ class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISession
 	/** @var Nette\Database\SelectionFactory */
 	private $selectionFactory;
 
-	
 
 	/**
-	 * @param Nette\Database\SelectionFactory $selectionFactory
+	 * @param Nette\Database\SelectionFactory
 	 */
 	public function __construct(Nette\Database\SelectionFactory $selectionFactory)
 	{
 		$this->selectionFactory = $selectionFactory;
 	}
-	
 	
 	
 	/**
@@ -42,49 +40,46 @@ class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISession
 		");
 	}
 
-	
 
 	/**
-	 * @param string $savePath
-	 * @param string $sessionName
+	 * @param string
+	 * @param string
 	 */
-    public	function open($savePath, $sessionName)
+	public function open($savePath, $sessionName)
 	{
 		$id = session_id();
 		$connection = $this->selectionFactory->getConnection();
-		
-        while (!$connection->query("SELECT IS_FREE_LOCK('session_$id') AS free")->fetch()->free);
-		
+
+		while (!$connection->query("SELECT IS_FREE_LOCK('session_$id') AS free")->fetch()->free);
+
 		$connection->query("SELECT GET_LOCK('session_$id', 1)");
 
-        return TRUE;
-    }
+		return TRUE;
+	}
 
 	
-	
 	/**
-	 * @param int $id
+	 * @param int
 	 * @return string
 	 */
-    public  function read($id)
+	public function read($id)
 	{		
-        if ($data = $this->selectionFactory->table('session')->get($id)) {
-            $data = $data->data;
+		if ($data = $this->selectionFactory->table('session')->get($id)) {
+			$data = $data->data;
 		} else {
-            $data = "";
+			$data = "";
 		}
-		
-        return $data;
-    }
+
+		return $data;
+	}
 
 	
-	
 	/**
-	 * @param int $id
-	 * @param type $data
+	 * @param int
+	 * @param string
 	 * @throws \Nette\InvalidStateException
 	 */
-    public function write($id, $data = "")
+	public function write($id, $data = "")
 	{
 		if ($row = $this->selectionFactory->table('session')->get($id)) {
 			$row->update(array(
@@ -98,41 +93,38 @@ class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISession
 				'data' => $data,
 			));
 		}
-		
+
 		return TRUE;
-    }
+	}
 
 	
-	
 	/**
-	 * @param int $max
+	 * @param int
 	 * @return boolean
 	 */
-    public  function clean($max)
+	public function clean($max)
 	{		
-        $this->selectionFactory->table('session')->where("timestamp < ?", ( time() - $max ))->delete();
-		
-        return TRUE;
-    }
+		$this->selectionFactory->table('session')->where("timestamp < ?", ( time() - $max ))->delete();
 
+		return TRUE;
+	}
 	
 
 	/**
 	 * @return boolean
 	 */
-    public function close()
+	public function close()
 	{
-        $id = session_id();
-		
-        $this->selectionFactory->getConnection()->query("SELECT RELEASE_LOCK('session_$id')");
-		
-        return TRUE;
-    }
+		$id = session_id();
 
+		$this->selectionFactory->getConnection()->query("SELECT RELEASE_LOCK('session_$id')");
 
+		return TRUE;
+	}
+	
 	
 	/**
-	 * @param mixed $id
+	 * @param mixed
 	 * @return boolean
 	 */
 	public function remove($id)
@@ -141,9 +133,8 @@ class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISession
 			$row->delete();
 		}
 
-        return TRUE;
+		return TRUE;
 	}
-	
 	
 	
 	/**
@@ -153,7 +144,6 @@ class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISession
 	{
 		return (bool) $this->selectionFactory->table('session')->delete();
 	}
-
 
 
 	/**
