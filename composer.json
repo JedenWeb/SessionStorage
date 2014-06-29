@@ -14,5 +14,9 @@
 	},
 	"require": {
 		"nette/nette": "dev-master"
+	"autoload": {
+		"psr-4": {
+			"JedenWeb\\SessionStorage\\": "src/JedenWeb/SessionStorage/"
+		}
 	}
 }
