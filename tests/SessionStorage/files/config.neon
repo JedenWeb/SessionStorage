@@ -1,0 +1,16 @@
+parameters:
+	database:
+		driver: mysql
+		host: localhost
+		user: root
+		password:
+
+nette:
+	database:
+		default:
+			dsn: '%database.driver%:host=%database.host%'
+			user: %database.user%
+			password: %database.password%
+
+extensions:
+	jedenweb.sessionStorage: JedenWeb\SessionStorage\DI\DatabaseStorageExtension
