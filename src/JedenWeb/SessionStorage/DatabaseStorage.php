@@ -1,35 +1,32 @@
 <?php
 
-namespace JedenWeb\SessionStorage\Http;
+namespace JedenWeb\SessionStorage;
 
 use Nette;
 
 /**
  * @author Pavel Jurásek <jurasekpavel@ctyrimedia.cz>
  */
-class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISessionStorage
+class DatabaseStorage extends Nette\Object implements Nette\Http\ISessionStorage
 {
 
-	/** @var Nette\Database\SelectionFactory */
-	private $selectionFactory;
+	/** @var Nette\Database\Context */
+	private $context;
 
 
-	/**
-	 * @param Nette\Database\SelectionFactory
-	 */
-	public function __construct(Nette\Database\SelectionFactory $selectionFactory)
+	public function __construct(Nette\Database\Context $context)
 	{
-		$this->selectionFactory = $selectionFactory;
+		$this->context = $context;
 	}
-	
-	
+
+
 	/**
-	 * @internal  Create table in database
+	 * @internal
 	 * Create database table.
 	 */
 	public function install()
 	{
-		$this->selectionFactory->getConnection()->query("
+		$this->context->getConnection()->query('
 			CREATE TABLE IF NOT EXISTS `session` (
 				`id` varchar(64) NOT NULL,
 				`timestamp` int(11) NOT NULL,
@@ -37,18 +34,19 @@ class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISession
 				PRIMARY KEY (`id`),
 				KEY `timestamp` (`timestamp`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-		");
+		');
 	}
 
 
 	/**
 	 * @param string
 	 * @param string
+	 * @return boolean
 	 */
 	public function open($savePath, $sessionName)
 	{
 		$id = session_id();
-		$connection = $this->selectionFactory->getConnection();
+		$connection = $this->context->getConnection();
 
 		while (!$connection->query("SELECT IS_FREE_LOCK('session_$id') AS free")->fetch()->free);
 
@@ -62,33 +60,34 @@ class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISession
 	 * @param int
 	 * @return string
 	 */
-	public function read($id)
+	public function read($sessionId)
 	{		
-		if ($data = $this->selectionFactory->table('session')->get($id)) {
+		if ($data = $this->context->table('session')->get($sessionId)) {
 			$data = $data->data;
 		} else {
-			$data = "";
+			$data = '';
 		}
 
 		return $data;
 	}
 
-	
+
 	/**
 	 * @param int
 	 * @param string
 	 * @throws \Nette\InvalidStateException
+	 * @return boolean
 	 */
-	public function write($id, $data = "")
+	public function write($sessionId, $data = '')
 	{
-		if ($row = $this->selectionFactory->table('session')->get($id)) {
+		if ($row = $this->context->table('session')->get($sessionId)) {
 			$row->update(array(
 				'timestamp' => time(),
 				'data' => $data,
 			));
 		} else {
-			$this->selectionFactory->table('session')->insert(array(
-				'id' => $id,
+			$this->context->table('session')->insert(array(
+				'id' => $sessionId,
 				'timestamp' => time(),
 				'data' => $data,
 			));
@@ -104,11 +103,11 @@ class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISession
 	 */
 	public function clean($max)
 	{		
-		$this->selectionFactory->table('session')->where("timestamp < ?", ( time() - $max ))->delete();
-
-		return TRUE;
+		return (bool) $this->context->table('session')
+				->where('timestamp < ?', ( time() - $max ))
+				->delete();
 	}
-	
+
 
 	/**
 	 * @return boolean
@@ -117,32 +116,34 @@ class DatabaseSessionStorage extends Nette\Object implements Nette\Http\ISession
 	{
 		$id = session_id();
 
-		$this->selectionFactory->getConnection()->query("SELECT RELEASE_LOCK('session_$id')");
+		$this->context->getConnection()->query("SELECT RELEASE_LOCK('session_$id')");
 
 		return TRUE;
 	}
-	
-	
+
+
 	/**
 	 * @param mixed
 	 * @return boolean
 	 */
 	public function remove($id)
 	{
-		if ($row = $this->selectionFactory->table('session')->get($id)) {
+		if ($row = $this->context->table('session')->get($id)) {
 			$row->delete();
 		}
 
 		return TRUE;
 	}
-	
-	
+
+
 	/**
 	 * @return boolean
 	 */
-	public function destroy()
+	public function destroy($sessionId)
 	{
-		return (bool) $this->selectionFactory->table('session')->delete();
+		return (bool) $this->context->table('session')
+				->where('id = ?', $sessionId)
+				->delete();
 	}
 
 
