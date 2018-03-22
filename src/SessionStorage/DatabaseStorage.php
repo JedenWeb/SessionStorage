@@ -2,39 +2,33 @@
 
 namespace JedenWeb\SessionStorage;
 
-use Nette;
+use Kdyby\Doctrine\EntityManager;
+use Kdyby\Doctrine\EntityRepository;
 
 /**
  * @author Pavel Jurásek <jurasekpavel@ctyrimedia.cz>
  */
-class DatabaseStorage extends Nette\Object implements Nette\Http\ISessionStorage
+class DatabaseStorage implements \SessionHandlerInterface
 {
 
-	/** @var Nette\Database\Context */
-	private $context;
+	/**
+	 * @var EntityManager
+	 */
+	private $entityManager;
 
-
-	public function __construct(Nette\Database\Context $context)
-	{
-		$this->context = $context;
-	}
+	/**
+	 * @var EntityRepository
+	 */
+	private $sessions;
 
 
 	/**
-	 * @internal
-	 * Create database table.
+	 * @param EntityManager $entityManager
 	 */
-	public function install()
+	public function __construct(EntityManager $entityManager)
 	{
-		$this->context->getConnection()->query('
-			CREATE TABLE IF NOT EXISTS `session` (
-				`id` varchar(64) NOT NULL,
-				`timestamp` int(11) NOT NULL,
-				`data` longtext NOT NULL,
-				PRIMARY KEY (`id`),
-				KEY `timestamp` (`timestamp`)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-		');
+		$this->entityManager = $entityManager;
+		$this->sessions = $entityManager->getRepository(Session::class);
 	}
 
 
@@ -55,13 +49,13 @@ class DatabaseStorage extends Nette\Object implements Nette\Http\ISessionStorage
 		return TRUE;
 	}
 
-	
+
 	/**
 	 * @param int
 	 * @return string
 	 */
 	public function read($sessionId)
-	{		
+	{
 		if ($data = $this->context->table('session')->get($sessionId)) {
 			$data = $data->data;
 		} else {
@@ -96,13 +90,13 @@ class DatabaseStorage extends Nette\Object implements Nette\Http\ISessionStorage
 		return TRUE;
 	}
 
-	
+
 	/**
 	 * @param int
 	 * @return boolean
 	 */
 	public function clean($max)
-	{		
+	{
 		return (bool) $this->context->table('session')
 				->where('timestamp < ?', ( time() - $max ))
 				->delete();

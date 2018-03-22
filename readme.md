@@ -17,7 +17,14 @@ extensions:
 	sessionStorage: JedenWeb\SessionStorage\DI\DatabaseStorageExtension
 ```
 
-## Issues
+Add table to your database
 
- - [ ] I don't know how to [prevent Nette\Http\SessionSection from triggering error](http://api.nette.org/2.1.4/source-Http.SessionSection.php.html#197) (should be solved by https://github.com/nette/nette/pull/1395 in Nette ~2.2).
- - [ ] TODO: Don't call ```DatabaseStorage::install()``` on every request but only once on compile time.
+```
+CREATE TABLE IF NOT EXISTS `session` (
+	`id` varchar(64) NOT NULL,
+	`timestamp` int(11) NOT NULL,
+	`data` longtext NOT NULL,
+	PRIMARY KEY (`id`),
+	KEY `timestamp` (`timestamp`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+```

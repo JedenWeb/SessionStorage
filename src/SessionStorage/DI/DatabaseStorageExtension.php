@@ -2,12 +2,14 @@
 
 namespace JedenWeb\SessionStorage\DI;
 
-use Nette;
+use JedenWeb\SessionStorage\DatabaseStorage;
+
+use Nette\DI\CompilerExtension;
 
 /**
  * @author Pavel Jurásek <jurasekpavel@ctyrimedia.cz>
  */
-class DatabaseStorageExtension extends Nette\DI\CompilerExtension
+class DatabaseStorageExtension extends CompilerExtension
 {
 
 	public function loadConfiguration()
@@ -15,11 +17,10 @@ class DatabaseStorageExtension extends Nette\DI\CompilerExtension
 		$container = $this->getContainerBuilder();
 
 		$definition = $container->addDefinition($this->prefix('databaseStorage'))
-				->setClass('JedenWeb\SessionStorage\DatabaseStorage')
-				->addSetup('install');
+			->setClass(DatabaseStorage::class);
 
 		$container->getDefinition('session')
-				->addSetup('setStorage', array($definition));
+			->addSetup('setStorage', [$definition]);
 	}
 
 }
